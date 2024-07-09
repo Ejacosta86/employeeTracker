@@ -69,11 +69,13 @@ function viewTable(queue) {
 }
 
 function addDepartment() {
-  prompt({
+  prompt([
+  {
     type: "input",
     name: "name",
     message: "Enter the name of the new department:",
-  }).then(({ input }) => {
+  },
+  ]).then(({ input }) => {
     pool
       .query("INSERT INTO departments (department_name) VALUES ($1)", [input])
       .then((data) => {
