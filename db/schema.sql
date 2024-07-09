@@ -1,7 +1,8 @@
 \c postgres;
-DROP DATABASE IF EXISTS employeeTracker_db;
-CREATE DATABASE employeeTracker_db;
-USE employeeTracker_db;
+DROP DATABASE IF EXISTS employee_db;
+CREATE DATABASE employee_db;
+ 
+ \c employee_db;
 
 CREATE TABLE department (
 id SERIAL PRIMARY KEY,

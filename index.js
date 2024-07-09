@@ -1,5 +1,5 @@
 const { prompt } = require("inquirer");
-const { pool } = require("pg");
+const { Pool } = require("pg");
 const cTable = require("console.table");
 
 const pool = new Pool(
