@@ -62,6 +62,7 @@ prompt([
   }
 });
 
+//for viewing DB data and allows to view data in table format
 function viewTable(queue) {
   pool.query(queue).then(({ rows }) => {
     console.table(rows);
