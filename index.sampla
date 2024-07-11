@@ -5,7 +5,7 @@ const cTable = require("console.table");
 const pool = new Pool(
   {
     user: "postgres",
-    password: "erica",
+    password: "password",
     host: "localhost",
     database: "employee_db",
   },
@@ -30,42 +30,41 @@ prompt([
     message: "What would you like to do?",
     choices: choicesArray,
   },
-]).then(({ choice }) => {
-  switch (choice) {
-    case "View all departments":
+]).then(({ choices }) => {
+  switch (choicesArray.indexOf(choices)) {
+    case 0: //view all departments
       viewTable(`SELECT * FROM department`);
       break;
-    case "View all roles":
+    case 1: //view all roles
     viewTable(`SELECT role.id, title, salary, name AS department 
     FROM role 
     JOIN department ON role.department = department.id`);
       break;
-    case "View all employees":
-    viewTable(`SELECT e1.id, e1.first_name, e1.last_name, role.title AS title, role.salary, department.name AS department, CONCAT(e2.first_name, ' ', e2.last_name) AS manager
-              FROM employee e1 
-              JOIN role ON e1.role_id = role.id 
-              JOIN department ON role.department.id = department.id
-              LEFT JOIN employee e2 ON e1.manager_id = e2.id`);
+    case 2: //view all employees
+    viewTable(`SELECT e1.id, e1.first_name, e1.last_name, title, salary, department.name AS department, CONCAT(e2.first_name, ' ', e2.last_name) AS manager
+    FROM employee e1 
+    JOIN 
+      role ON role.id = e1.role_id 
+    JOIN 
+      department ON role.department = department_is
+    LEFT JOIN 
+      employee e2 ON e1.manager_id = e2.id`);
       break;
-    case "Add a department":
+    case 3:
       addDepartment();
       break;
-    case "Add a role":
+    case 4:
       addRole();
       break;
-    case "Add an employee":
+    case 5:
       addEmployee();
       break;
-    case "Add a manager":
+    case 6:
       addManager();
       break;
-    case "Update employee role":
+    case 7:
       updateEmployeeRole();
       break;
-    default:
-        console.log("Invalid choice");
-        pool.end();
-        break;
   }
 });
 
@@ -74,21 +73,7 @@ function viewTable(queue) {
   pool.query(queue).then(({ rows }) => {
     console.table(rows);
     pool.end();
-  })
-  .catch((err) => {
-    console.error("Error excusting query", err);
-    pool.end();
   });
-}
-
-function viewEmployees() {
-  viewTable(`
-    SELECT e1.id, e1.first_name, e1.last_name, role.title AS title, role.salary, department.name AS department, CONCAT(e2.first_name, ' ', e2.last_name) AS manager
-    FROM employee e1 
-    JOIN role ON e1.role_id = role.id 
-    JOIN department ON role.department_id = department.id
-    LEFT JOIN employee e2 ON e1.manager_id = e2.id
-  `);
 }
 
 function addDepartment() {
@@ -99,14 +84,13 @@ function addDepartment() {
     message: "Enter the name of the new department:",
   },
   ]).then(({ input }) => {
-    pool.query("INSERT INTO department (name) VALUES ($1)", [input])
+    pool.query("INSERT INTO departments (department_name) VALUES ($1)", [input])
       .then((data) => {
         console.log(`Added new department '${input}'`);
         pool.end();
       })
       .catch((err) => {
-        console.error("Error when adding department", err);
-        pool.end();
+        console.log("Error when adding department");
       });
   });
 }
@@ -117,28 +101,32 @@ async function addRole() {
     {
       type: "input",
       name: "title",
-      message: "Enter the title of new role:",
+      message: "Enter the title of new role",
     },
     {
       type: "input",
       name: "salary",
-      message: "Enter the salary of the new role:",
+      message: "Enter the salary of the new role",
     },
     {
       type: "list",
       name: "department",
-      message: "Select the department for new role:",
-      choices: departments.map((dept) => dept.name),
+      message: "Select the department for new role",
+      choices: departments.map((obj) => obj.name),
     },
-  ]).then(({ title, salary, department }) => {
-    const department_id = departments.find((dept) => dept.name === department).id;
-    pool.query("INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)")
-        .then((result) => {
-        console.log(`Added new role '${title}'`);
+  ]).then(({ role, salary, department }) => {
+    const department_id = departments.filter(
+      (obj) => obj.name === department
+    )[0].id;
+    pool.query("INSERT INTO role (title, salary, department) VALUES ($1, $2, $3)",
+        [role, salary, department_id]
+      )
+      .then(({ rows }) => {
+        console.log(`Added new role '${role}'`);
       })
       .catch((err) => {
-        console.error("Error when adding new role!", err);
-        pool.end();
+        console.log("Error when adding new role!");
+        console.log(err);
       });
   });
 }
@@ -161,58 +149,61 @@ async function addEmployee() {
       type: "list",
       name: "role",
       message: "Select the employee role:",
-      choices: roles.map((role) => role.title),
+      choices: roles.map((obj) => obj.title),
     },
     {
       type: "list",
       name: "manager",
       message: "Select the employee manager:",
-      choices: managers.map((manager) => manager.name),
+      choices: managers.map((obj) => obj.name),
     },
   ]).then(({ first_name, last_name, role, manager}) => {
-    const role_id = roles.find((r) => r.title === role).id;
-    const manager_id = managers.find((m) => m.name === manager).employee_id;
-    pool.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)",
-      [first_name, last_name, role_id, manager_id])
-    .then((result) => {
+    const role_id = roles.filter((obj) => obj.title === role)[0].id;
+    const manager_id = managers.filter((obj) => obj.name === manager)[0].employee_id;
+    pool
+    .query(
+      "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1, $2, $3, $4)",
+      [first_name, last_name, role_id, manager_id]
+    )
+    .then(({ rows }) => {
       console.log(`Added new employee '${first_name} ${last_name}'`);
       pool.end();
     })
     .catch((err) => {
-      console.error("Error when adding new employee!", err);
-      pool.end();
+      console.log("Error when adding new employee!")
     });
   });
 }
 
 async function updateEmployeeRole() {
-  const employees = await getEmployees();
   const roles = await getRoles();
+  const employees = await getEmployees();
   prompt([
     {
       type: "list",
       name: "employee",
       message: "Select the employee to update:",
-      choices: employees.map((emp) => `${emp.first_name} ${emp.last_name}`),
+      choices: employees.map((obj) => obj.first_name + " " + obj.last_name),
     },
     {
       type: "list",
       name: "role",
       message: "Select the new role",
-      choices: roles.map((role) => role.title),
+      choices: roles.map((obj) => obj.title),
     },
   ]).then (({ employee, role}) => {
-    const employee_id = employees.find((emp) => `${emp.first_name} ${emp.last_name}` === employee).id;
-    const role_id = roles.find((r) => r.title === role).id;
-    pool.query("UPDATE employee SET role_id = $1 WHERE id = $2", [role_id, employee_id,])
+    const role_id = roles.filter((obj) => obj.title === role)[0].id;
+    const employee_id = employees.filter((obj) => obj.first_name + " " + obj.last_name === employee)[0].id;
+    pool
+    .query("UPDATE employee SET role_id = $1 WHERE id = $2",[role_id, employee_id,])
   })
-  .then((result) => {
-    console.log(`Updated employee '${employee}' role to '${role}'`);
+  .then(({ rows }) => {
+    console.log(`Updated employee '${employee}' role to ${role}`);
     pool.end();
   })
   .catch((err) => {
-    console.error("Error when updating employees role!", err);
-    pool.end();
+    console.log("Error when updating employees role!");
+    console.log(err);
   });
 }
 
@@ -240,3 +231,4 @@ async function getAvailableManagers() {
   managers.unshift({name: "NONE", employee_id: null });
   return managers;
 }
+
