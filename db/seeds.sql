@@ -1,7 +1,7 @@
 DELETE FROM department;
 INSERT INTO department (name)
 VALUES
-('Sale'),
+('Sales'),
 ('Engineering'),
 ('Finance'),
 ('Legal');

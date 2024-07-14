@@ -19,7 +19,7 @@ const choicesArray = [
   "Add a department",
   "Add a role",
   "Add an employee",
-  "Add a manager",
+  // "Add a manager",
   "Update employee role",
 ];
 
@@ -52,9 +52,9 @@ prompt([
     case "Add an employee":
       addEmployee();
       break;
-    case "Add a manager":
-      addManager();
-      break;
+    // case "Add a manager":
+    //   addManager();
+    //   break;
     case "Update employee role":
       updateEmployeeRole();
       break;
@@ -126,18 +126,19 @@ async function addRole() {
       message: "Select the department for new role:",
       choices: departments.map((dept) => dept.name),
     },
-  ]).then(({ title, salary, departments }) => {
-    const department = departments?.find((dept) => dept.name === department).id;
-    pool.query("INSERT INTO role (title, salary, department.id) VALUES ($1, $2, $3)")
-        .then((result) => {
+  ]).then(({ title, salary, department }) => {
+    const findDepartment = departments?.find((dept) => dept.name === department).id;
+    pool.query("INSERT INTO role (title, salary, department) VALUES ($1, $2, $3)", [title, salary, findDepartment])
+      .then(() => {
         console.log(`Added new role '${title}'`);
+        pool.end();
       })
       .catch((err) => {
         console.error("Error when adding new role!", err);
         pool.end();
       });
   });
-}
+};
 
 async function addEmployee() {
   const roles = await getRoles();
@@ -202,7 +203,7 @@ async function updateEmployeeRole() {
     const role_id = roles.find((r) => r.title === role).id;
     pool.query("UPDATE employee SET role_id = $1 WHERE id = $2", [role_id, employee_id,])
   })
-  .then((result) => {
+  .then(() => {
     console.log(`Updated employee '${employees}' role to '${roles}'`);
     pool.end();
   })
