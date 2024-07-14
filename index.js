@@ -126,9 +126,9 @@ async function addRole() {
       message: "Select the department for new role:",
       choices: departments.map((dept) => dept.name),
     },
-  ]).then(({ title, salary, department }) => {
-    const department_id = departments.find((dept) => dept.name === department).id;
-    pool.query("INSERT INTO role (title, salary, department_id) VALUES ($1, $2, $3)")
+  ]).then(({ title, salary, departments }) => {
+    const department = departments?.find((dept) => dept.name === department).id;
+    pool.query("INSERT INTO role (title, salary, department.id) VALUES ($1, $2, $3)")
         .then((result) => {
         console.log(`Added new role '${title}'`);
       })
@@ -203,7 +203,7 @@ async function updateEmployeeRole() {
     pool.query("UPDATE employee SET role_id = $1 WHERE id = $2", [role_id, employee_id,])
   })
   .then((result) => {
-    console.log(`Updated employee '${employee}' role to '${role}'`);
+    console.log(`Updated employee '${employees}' role to '${roles}'`);
     pool.end();
   })
   .catch((err) => {
