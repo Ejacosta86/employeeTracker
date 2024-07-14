@@ -32,8 +32,7 @@ If you have any further questions, you can email me at ejacosta86@gmail.com.
 click link to view [website](https://github.com/Ejacosta86/employeeTracker).
 
 ## Application video
-Click to watch video of application process [file link]().
+Click to watch video of application process [file link](https://drive.google.com/file/d/1a2TCyEraubth-cYZCXzmJsWML7CTRUDJ/view).
 
 ## Preview
-![example website]()
-![example website]()
+![example website](./assets/emp%20tracker%20.png)

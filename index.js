@@ -19,7 +19,6 @@ const choicesArray = [
   "Add a department",
   "Add a role",
   "Add an employee",
-  // "Add a manager",
   "Update employee role",
 ];
 
@@ -52,9 +51,6 @@ prompt([
     case "Add an employee":
       addEmployee();
       break;
-    // case "Add a manager":
-    //   addManager();
-    //   break;
     case "Update employee role":
       updateEmployeeRole();
       break;
